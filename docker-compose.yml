@@ -1,0 +1,26 @@
+services:
+  traefik:
+    image: traefik:v3.7.13
+    container_name: traefik
+    restart: unless-stopped
+    command:
+      - --configFile=/etc/traefik/traefik.yml
+    environment:
+      # Some newer Docker Engine builds reject the old API version Traefik's
+      # docker client defaults to — pin an explicit, modern one.
+      - DOCKER_API_VERSION=1.44
+    ports:
+      - "80:80"
+      - "443:443"
+      - "3001:3001"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./traefik/acme:/letsencrypt
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    name: proxy
+    external: true
