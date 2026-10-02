@@ -19,6 +19,7 @@ services:
     ports:
       - "80:80"
       - "443:443"
+      - "3001:3001"
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
       # Self-routes the Traefik dashboard through Traefik itself, gated by
