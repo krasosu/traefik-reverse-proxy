@@ -1,6 +1,6 @@
 services:
   traefik:
-    image: traefik:v3.7.13
+    image: traefik:{{ traefik_version }}
     container_name: traefik
     restart: unless-stopped
     command:
@@ -18,9 +18,9 @@ services:
       - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
       - ./traefik/acme:/letsencrypt
     networks:
-      - proxy
+      - {{ proxy_network_name }}
 
 networks:
-  proxy:
-    name: proxy
+  {{ proxy_network_name }}:
+    name: {{ proxy_network_name }}
     external: true

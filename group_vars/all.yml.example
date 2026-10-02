@@ -1,0 +1,10 @@
+# Copy to group_vars/all.yml and fill in real values.
+# group_vars/all.yml is gitignored — never commit it.
+
+traefik_version: "v3.7.13"
+acme_email: "admin@example.com"
+proxy_network_name: proxy
+deploy_path: /opt/traefik
+
+# Set to false if Docker is already installed on the target host.
+install_docker: true

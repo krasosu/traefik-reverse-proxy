@@ -24,15 +24,15 @@ entryPoints:
 providers:
   docker:
     exposedByDefault: false
-    network: proxy
+    network: {{ proxy_network_name }}
 
 certificatesResolvers:
   letsencrypt:
     acme:
-      email: admin@krasosu.de
+      email: {{ acme_email }}
       storage: /letsencrypt/acme.json
       httpChallenge:
         entryPoint: web
 
 log:
-  level: INFO
+  level: {{ traefik_log_level | default('INFO') }}

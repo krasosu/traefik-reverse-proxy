@@ -1,1 +1,4 @@
+inventory.ini
+group_vars/all.yml
+*.retry
 traefik/acme/acme.json
