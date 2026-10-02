@@ -8,3 +8,12 @@ deploy_path: /opt/traefik
 
 # Set to false if Docker is already installed on the target host.
 install_docker: true
+
+# Traefik's own dashboard, routed through Traefik itself and gated by
+# basic auth. Leave disabled unless you set dashboard_auth_users below.
+enable_dashboard: false
+dashboard_domain: "traefik.example.com"
+
+# Generate with: htpasswd -nB <user>
+dashboard_auth_users:
+  - "user:$apr1$replace$with-your-htpasswd-hash"

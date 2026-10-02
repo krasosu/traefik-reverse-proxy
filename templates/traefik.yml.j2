@@ -1,38 +1,35 @@
 api:
-  dashboard: false
+  dashboard: {{ enable_dashboard | default(false) | lower }}
+
+certificatesResolvers:
+  http:
+    acme:
+      email: {{ acme_email }}
+      storage: acme_letsencrypt.json
+      httpChallenge:
+        entryPoint: http
 
 entryPoints:
-  web:
+  http:
     address: ":80"
     http:
-      aliasHeadersStrategy: delete
       redirections:
         entryPoint:
-          to: websecure
+          to: https
           scheme: https
-  websecure:
+  https:
     address: ":443"
-    http:
-      aliasHeadersStrategy: delete
-  # Dedicated entrypoint so LCARS keeps its existing http://krasosu.de:3001/
-  # link instead of moving to a subdomain.
-  lcars:
-    address: ":3001"
-    http:
-      aliasHeadersStrategy: delete
+
+global:
+  checkNewVersion: true
+  sendAnonymousUsage: false
 
 providers:
   docker:
+    endpoint: "unix:///var/run/docker.sock"
     exposedByDefault: false
     network: {{ proxy_network_name }}
-
-certificatesResolvers:
-  letsencrypt:
-    acme:
-      email: {{ acme_email }}
-      storage: /letsencrypt/acme.json
-      httpChallenge:
-        entryPoint: web
-
-log:
-  level: {{ traefik_log_level | default('INFO') }}
+  file:
+    filename: "./dynamic_conf.yml"
+    watch: true
+  providersThrottleDuration: 10

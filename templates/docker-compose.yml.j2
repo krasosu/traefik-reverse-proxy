@@ -2,25 +2,43 @@ services:
   traefik:
     image: traefik:{{ traefik_version }}
     container_name: traefik
+    hostname: traefik
     restart: unless-stopped
-    command:
-      - --configFile=/etc/traefik/traefik.yml
+    security_opt:
+      - no-new-privileges:true
     environment:
       # Some newer Docker Engine builds reject the old API version Traefik's
       # docker client defaults to — pin an explicit, modern one.
       - DOCKER_API_VERSION=1.44
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./data/traefik.yml:/traefik.yml:ro
+      - ./data/acme_letsencrypt.json:/acme_letsencrypt.json
+      - ./data/dynamic_conf.yml:/dynamic_conf.yml
     ports:
       - "80:80"
       - "443:443"
-      - "3001:3001"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
-      - ./traefik/acme:/letsencrypt
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+      # Self-routes the Traefik dashboard through Traefik itself, gated by
+      # the "traefikAuth" basic-auth middleware from dynamic_conf.yml.
+      - "traefik.enable={{ enable_dashboard | default(false) | lower }}"
+      - "traefik.http.routers.traefik.entrypoints=https"
+      - "traefik.http.routers.traefik.rule=Host(`{{ dashboard_domain | default('traefik.example.com') }}`)"
+      - "traefik.http.routers.traefik.middlewares=traefikAuth@file,default@file"
+      - "traefik.http.routers.traefik.tls=true"
+      - "traefik.http.routers.traefik.tls.certresolver=http"
+      - "traefik.http.routers.traefik.service=api@internal"
+      - "traefik.http.services.traefik.loadbalancer.server.port=80"
+      - "traefik.http.services.traefik.loadbalancer.sticky.cookie.httpOnly=true"
+      - "traefik.http.services.traefik.loadbalancer.sticky.cookie.secure=true"
+      - "traefik.docker.network={{ proxy_network_name }}"
     networks:
       - {{ proxy_network_name }}
 
 networks:
   {{ proxy_network_name }}:
     name: {{ proxy_network_name }}
-    external: true
+    driver: bridge
+    attachable: true

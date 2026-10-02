@@ -42,28 +42,25 @@
             enabled: true
             state: started
 
-    - name: Check whether the external proxy network exists
-      ansible.builtin.command: docker network inspect {{ proxy_network_name }}
-      register: proxy_network_check
-      changed_when: false
-      failed_when: false
-
-    - name: Create the external "{{ proxy_network_name }}" network
-      ansible.builtin.command: docker network create {{ proxy_network_name }}
-      when: proxy_network_check.rc != 0
-
     - name: Create deployment directory structure
       ansible.builtin.file:
-        path: "{{ deploy_path }}/traefik/acme"
+        path: "{{ deploy_path }}/data"
         state: directory
         mode: "0755"
 
     - name: Deploy static Traefik configuration
       ansible.builtin.template:
         src: templates/traefik.yml.j2
-        dest: "{{ deploy_path }}/traefik/traefik.yml"
+        dest: "{{ deploy_path }}/data/traefik.yml"
         mode: "0644"
       notify: Restart traefik
+
+    - name: Deploy dynamic Traefik configuration
+      ansible.builtin.template:
+        src: templates/dynamic_conf.yml.j2
+        dest: "{{ deploy_path }}/data/dynamic_conf.yml"
+        mode: "0644"
+      # No restart needed: providers.file.watch picks this up live.
 
     - name: Deploy docker-compose file
       ansible.builtin.template:
@@ -71,9 +68,9 @@
         dest: "{{ deploy_path }}/docker-compose.yml"
         mode: "0644"
 
-    - name: Ensure acme.json exists with correct permissions
+    - name: Ensure acme_letsencrypt.json exists with correct permissions
       ansible.builtin.file:
-        path: "{{ deploy_path }}/traefik/acme/acme.json"
+        path: "{{ deploy_path }}/data/acme_letsencrypt.json"
         state: touch
         mode: "0600"
         modification_time: preserve

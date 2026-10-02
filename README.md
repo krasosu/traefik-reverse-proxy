@@ -23,8 +23,8 @@ networks:
 labels:
   - "traefik.enable=true"
   - "traefik.http.routers.myapp.rule=Host(`example.com`)"
-  - "traefik.http.routers.myapp.entrypoints=websecure"
-  - "traefik.http.routers.myapp.tls.certresolver=letsencrypt"
+  - "traefik.http.routers.myapp.entrypoints=https"
+  - "traefik.http.routers.myapp.tls.certresolver=http"
   - "traefik.http.services.myapp.loadbalancer.server.port=8080"
 ```
 
