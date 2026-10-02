@@ -60,7 +60,10 @@
         src: templates/dynamic_conf.yml.j2
         dest: "{{ deploy_path }}/data/dynamic_conf.yml"
         mode: "0644"
-      # No restart needed: providers.file.watch picks this up live.
+      # providers.file.watch can race an atomic file replace and get stuck
+      # on a transient read, so force a clean restart rather than relying
+      # on the hot-reload picking up the final content.
+      notify: Restart traefik
 
     - name: Deploy docker-compose file
       ansible.builtin.template:

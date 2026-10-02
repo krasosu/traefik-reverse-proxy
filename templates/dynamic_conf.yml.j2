@@ -21,9 +21,9 @@ http:
     traefikAuth:
       basicAuth:
         users:
-{%- for user in dashboard_auth_users %}
+{% for user in dashboard_auth_users %}
           - "{{ user }}"
-{%- endfor %}
+{% endfor %}
 
     # General-purpose middleware chain for regular services.
     default:
